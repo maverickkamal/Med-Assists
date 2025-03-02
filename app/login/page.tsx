@@ -39,8 +39,8 @@ export default function LoginPage() {
         description: "You've successfully logged in."
       })
       
-      // Use window.location.href for a full page refresh
-      window.location.href = "/chat"
+      // Force a hard redirect to the chat page
+      window.location.replace("/chat")
     } catch (error) {
       toast({
         title: "Error",
@@ -156,9 +156,9 @@ export default function LoginPage() {
             </div>
 
             <div className="text-sm">
-              <a href="#" className="font-medium text-[#7b3f00] hover:text-[#7b3f00]/70">
+              <Link href="/forgot-password" className="font-medium text-[#7b3f00] hover:text-[#7b3f00]/70">
                 Forgot your password?
-              </a>
+              </Link>
             </div>
           </div>
 
