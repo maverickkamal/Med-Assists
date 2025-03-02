@@ -9,7 +9,6 @@ ist\.gitignore
 /coverage
 
 
-
 # next.js
 /.next/
 /out/
