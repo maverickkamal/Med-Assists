@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Icon } from "@/components/Icon"
-import { signInWithEmail, signInWithGoogle } from "@/lib/supabase"
+import { signInWithEmail, signInWithGoogle, supabase } from "@/lib/supabase"
 import { toast } from "@/components/ui/use-toast"
 import { AuthResponse } from "@/types/auth"
 
@@ -25,11 +25,61 @@ export default function LoginPage() {
       const { data, error } = await signInWithEmail(email, password)
       
       if (error) {
-        toast({
-          title: "Error",
-          description: error.message || "Invalid credentials",
-          variant: "destructive"
-        })
+        // Handle specific error cases with helpful messages
+        if (error.message.includes("Email not confirmed")) {
+          toast({
+            title: "Email not verified",
+            description: "Please verify your email before logging in. We'll resend the verification email.",
+            variant: "destructive"
+          });
+          
+          // Automatically resend verification email
+          localStorage.setItem("verificationEmail", email);
+          const { error: resendError } = await supabase.auth.resend({
+            type: 'signup',
+            email: email,
+          });
+          
+          if (!resendError) {
+            toast({
+              title: "Verification email sent",
+              description: "Please check your inbox and click the verification link."
+            });
+          }
+          
+          setTimeout(() => {
+            router.push("/verify-email");
+          }, 2000);
+        } else if (error.message.includes("Invalid login credentials") || error.message.includes("Invalid email or password")) {
+          toast({
+            title: "Invalid credentials",
+            description: "The email or password you entered is incorrect. Please try again.",
+            variant: "destructive"
+          });
+        } else if (error.message.includes("not found") || error.message.includes("does not exist")) {
+          toast({
+            title: "Account not found",
+            description: "No account exists with this email. Would you like to sign up?",
+            variant: "destructive",
+            action: (
+              <div className="mt-2">
+                <Button
+                  className="bg-white text-[#7b3f00] hover:bg-white/90"
+                  size="sm"
+                  onClick={() => router.push("/signup")}
+                >
+                  Sign up
+                </Button>
+              </div>
+            )
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: error.message || "An error occurred during login",
+            variant: "destructive"
+          });
+        }
         setIsLoading(false)
         return
       }
