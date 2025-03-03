@@ -15,34 +15,92 @@ export default function SignUpPage() {
   const [lastName, setLastName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [emailError, setEmailError] = useState("")
+  const [passwordError, setPasswordError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
+  // Validate email format
+  const validateEmail = (email: string) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!regex.test(email)) {
+      setEmailError("Please enter a valid email address");
+      return false;
+    }
+    setEmailError("");
+    return true;
+  };
+
+  // Validate password strength
+  const validatePassword = (password: string) => {
+    const minLength = password.length >= 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+    
+    if (!minLength || !hasUpperCase || !hasNumber || !hasSpecial) {
+      let message = "Password must contain:";
+      if (!minLength) message += " at least 8 characters,";
+      if (!hasUpperCase) message += " an uppercase letter,";
+      if (!hasNumber) message += " a number,";
+      if (!hasSpecial) message += " a special character,";
+      
+      // Remove trailing comma and add period
+      message = message.slice(0, -1) + ".";
+      setPasswordError(message);
+      return false;
+    }
+    
+    setPasswordError("");
+    return true;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
+    e.preventDefault();
+    
+    // Validate inputs before submission
+    const isEmailValid = validateEmail(email);
+    const isPasswordValid = validatePassword(password);
+    
+    if (!isEmailValid || !isPasswordValid) {
+      return;
+    }
+    
+    setIsLoading(true);
     
     // Store email for verification page
-    localStorage.setItem("verificationEmail", email)
+    localStorage.setItem("verificationEmail", email);
     
-    const { data, error }: AuthResponse = await signUpWithEmail(email, password, firstName, lastName)
+    const { data, error } = await signUpWithEmail(email, password, firstName, lastName);
     
     if (error) {
-      toast({
-        title: "Error",
-        description: error.message || "An error occurred during signup",
-        variant: "destructive"
-      })
-      setIsLoading(false)
-      return
+      // Check if email already exists
+      if (error.message.includes("already registered") || error.message.includes("already in use")) {
+        toast({
+          title: "Email already registered",
+          description: "This email is already registered. Please log in instead.",
+          variant: "destructive"
+        });
+        setTimeout(() => {
+          router.push("/login");
+        }, 2000);
+      } else {
+        toast({
+          title: "Error",
+          description: error.message || "An error occurred during signup",
+          variant: "destructive"
+        });
+      }
+      setIsLoading(false);
+      return;
     }
 
     toast({
       title: "Success!",
       description: "Please check your email to confirm your account."
-    })
-    router.push("/verify-email")
-    setIsLoading(false)
+    });
+    router.push("/verify-email");
+    setIsLoading(false);
   }
 
   const handleGoogleSignUp = async () => {
@@ -127,11 +185,16 @@ export default function SignUpPage() {
                 type="email"
                 autoComplete="email"
                 required
-                className="mt-1 block w-full rounded-xl border-[#7b3f00]/20 bg-white/30 text-[#7b3f00] placeholder-[#7b3f00]/30 focus:border-[#7b3f00] focus:ring-[#7b3f00] transition-all duration-200"
+                className={`mt-1 block w-full rounded-xl border-${emailError ? "red-500" : "[#7b3f00]/20"} bg-white/30 text-[#7b3f00] placeholder-[#7b3f00]/30 focus:border-[#7b3f00] focus:ring-[#7b3f00] transition-all duration-200`}
                 placeholder="Enter your email address"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (emailError) validateEmail(e.target.value);
+                }}
+                onBlur={() => validateEmail(email)}
               />
+              {emailError && <p className="text-red-500 text-xs mt-1">{emailError}</p>}
             </div>
             
             <div>
@@ -144,11 +207,22 @@ export default function SignUpPage() {
                 type="password"
                 autoComplete="new-password"
                 required
-                className="mt-1 block w-full rounded-xl border-[#7b3f00]/20 bg-white/30 text-[#7b3f00] placeholder-[#7b3f00]/30 focus:border-[#7b3f00] focus:ring-[#7b3f00] transition-all duration-200"
+                className={`mt-1 block w-full rounded-xl border-${passwordError ? "red-500" : "[#7b3f00]/20"} bg-white/30 text-[#7b3f00] placeholder-[#7b3f00]/30 focus:border-[#7b3f00] focus:ring-[#7b3f00] transition-all duration-200`}
                 placeholder="Create a password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (passwordError) validatePassword(e.target.value);
+                }}
+                onBlur={() => validatePassword(password)}
               />
+              {passwordError ? (
+                <p className="text-red-500 text-xs mt-1">{passwordError}</p>
+              ) : (
+                <p className="text-xs text-[#7b3f00]/70 mt-1">
+                  Password must be at least 8 characters with one uppercase, one number, and one special character.
+                </p>
+              )}
             </div>
           </div>
 
