@@ -6,10 +6,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Icon } from "@/components/Icon"
-import { signInWithEmail, signInWithGoogle, supabase } from "@/lib/supabase"
 import { toast } from "@/components/ui/use-toast"
-import { AuthResponse } from "@/types/auth"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
@@ -22,75 +19,16 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      const { data, error } = await signInWithEmail(email, password)
-      
-      if (error) {
-        // Handle specific error cases with helpful messages
-        if (error.message.includes("Email not confirmed")) {
-          toast({
-            title: "Email not verified",
-            description: "Please verify your email before logging in. We'll resend the verification email.",
-            variant: "destructive"
-          });
-          
-          // Automatically resend verification email
-          localStorage.setItem("verificationEmail", email);
-          const { error: resendError } = await supabase.auth.resend({
-            type: 'signup',
-            email: email,
-          });
-          
-          if (!resendError) {
-            toast({
-              title: "Verification email sent",
-              description: "Please check your inbox and click the verification link."
-            });
-          }
-          
-          setTimeout(() => {
-            router.push("/verify-email");
-          }, 2000);
-        } else if (error.message.includes("Invalid login credentials") || error.message.includes("Invalid email or password")) {
-          toast({
-            title: "Invalid credentials",
-            description: "The email or password you entered is incorrect. Please try again.",
-            variant: "destructive"
-          });
-        } else if (error.message.includes("not found") || error.message.includes("does not exist")) {
-          toast({
-            title: "Account not found",
-            description: "No account exists with this email. Would you like to sign up?",
-            variant: "destructive",
-            action: (
-              <div className="mt-2">
-                <Button
-                  className="bg-white text-[#7b3f00] hover:bg-white/90"
-                  size="sm"
-                  onClick={() => router.push("/signup")}
-                >
-                  Sign up
-                </Button>
-              </div>
-            )
-          });
-        } else {
-          toast({
-            title: "Error",
-            description: error.message || "An error occurred during login",
-            variant: "destructive"
-          });
-        }
-        setIsLoading(false)
-        return
-      }
-
+      // Authentication logic will be replaced with Clerk
       toast({
-        title: "Success!",
-        description: "You've successfully logged in."
+        title: "Authentication in progress",
+        description: "Login functionality is currently being updated."
       })
       
-      // Force a hard redirect to the chat page
-      window.location.replace("/chat")
+      // Simulate loading for now
+      setTimeout(() => {
+        setIsLoading(false)
+      }, 1000)
     } catch (error) {
       toast({
         title: "Error",
@@ -105,25 +43,15 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      const { data, error } = await signInWithGoogle()
+      // Google auth will be implemented with Clerk
+      toast({
+        title: "Google Auth",
+        description: "Google authentication is currently being updated."
+      })
       
-      if (error) {
-        toast({
-          title: "Error",
-          description: error.message,
-          variant: "destructive"
-        })
+      setTimeout(() => {
         setIsLoading(false)
-        return
-      }
-
-      // For Google OAuth, redirect to the provider URL
-      if (data && 'url' in data) {
-        window.location.href = data.url as string
-      } else if (data) {
-        // If we already have user data, go to chat
-        window.location.href = "/chat"
-      }
+      }, 1000)
     } catch (error) {
       toast({
         title: "Error",

@@ -1,12 +1,11 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { supabase } from "@/lib/supabase"
 import { toast } from "@/components/ui/use-toast"
 
 export default function ResetPasswordPage() {
@@ -15,24 +14,6 @@ export default function ResetPasswordPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const router = useRouter()
-
-  // Check if we have a valid reset token in the URL
-  useEffect(() => {
-    const checkSession = async () => {
-      const { data } = await supabase.auth.getSession()
-      // If no session or access token, redirect to login
-      if (!data.session?.access_token) {
-        toast({
-          title: "Error",
-          description: "Invalid or expired reset link. Please request a new one.",
-          variant: "destructive"
-        })
-        router.push("/forgot-password")
-      }
-    }
-    
-    checkSession()
-  }, [router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -61,27 +42,18 @@ export default function ResetPasswordPage() {
     }
 
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: password
-      })
-
-      if (error) {
-        toast({
-          title: "Error",
-          description: error.message,
-          variant: "destructive"
-        })
-        setIsLoading(false)
-        return
-      }
-
-      // Password reset successful
-      setIsSuccess(true)
+      // Password reset functionality will be implemented with Clerk
       
-      // Redirect to login after 3 seconds
+      // Simulate API call
       setTimeout(() => {
-        router.push("/login")
-      }, 3000)
+        // Password reset successful
+        setIsSuccess(true)
+        
+        // Redirect to login after 3 seconds
+        setTimeout(() => {
+          router.push("/login")
+        }, 3000)
+      }, 1000)
     } catch (error) {
       toast({
         title: "Error",

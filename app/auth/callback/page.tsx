@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { supabase } from "@/lib/supabase"
-import { toast } from "@/components/ui/use-toast"
 
 export default function AuthCallbackPage() {
   const [isProcessing, setIsProcessing] = useState(true)
@@ -16,31 +14,13 @@ export default function AuthCallbackPage() {
         // Clear any loading state
         setIsProcessing(true)
         
-        // Get current session
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+        // This will be replaced with Clerk authentication
+        console.log('Authentication callback page loaded')
         
-        if (sessionError) {
-          console.error('Auth session error:', sessionError)
-          setErrorMsg('Unable to authenticate. Please try again.')
-          setTimeout(() => {
-            window.location.href = "/login?error=Unable to authenticate"
-          }, 2000)
-          return
-        }
-
-        if (session) {
-          // Always redirect to chat page after successful auth
-          console.log('Authentication successful, redirecting to chat')
-          setIsProcessing(false)
-          // Use replace to prevent back button from returning to the callback page
+        // Temporary redirect until Clerk is implemented
+        setTimeout(() => {
           window.location.replace("/chat")
-        } else {
-          console.error('No session found after OAuth')
-          setErrorMsg('Authentication failed. Please try again.')
-          setTimeout(() => {
-            window.location.href = "/login"
-          }, 2000)
-        }
+        }, 2000)
       } catch (error) {
         console.error('Callback error:', error)
         setErrorMsg('An unexpected error occurred. Please try again.')

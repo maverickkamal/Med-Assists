@@ -4,7 +4,6 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { toast } from "@/components/ui/use-toast"
-import { supabase } from "@/lib/supabase"
 import { useRouter } from "next/navigation"
 
 export default function VerifyEmailPage() {
@@ -30,22 +29,9 @@ export default function VerifyEmailPage() {
     }
 
     try {
-      const { error } = await supabase.auth.resend({
-        type: 'signup',
-        email: email,
-      })
-
-      if (error) {
-        toast({
-          title: "Error",
-          description: error.message,
-          variant: "destructive"
-        })
-        return
-      }
-
+      // Email verification functionality will be implemented with Clerk
       toast({
-        title: "Success",
+        title: "Email Sent",
         description: "Verification email has been resent. Please check your inbox."
       })
     } catch (error) {

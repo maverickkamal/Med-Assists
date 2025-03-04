@@ -6,9 +6,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { signUpWithEmail, signUpWithGoogle } from "@/lib/supabase"
-import { toast } from "@/components/ui/use-toast" // If you have a toast component
-import { AuthResponse } from '@/types/auth'
+import { toast } from "@/components/ui/use-toast"
 
 export default function SignUpPage() {
   const [firstName, setFirstName] = useState("")
@@ -68,67 +66,53 @@ export default function SignUpPage() {
     
     setIsLoading(true);
     
-    // Store email for verification page
-    localStorage.setItem("verificationEmail", email);
-    
-    const { data, error } = await signUpWithEmail(email, password, firstName, lastName);
-    
-    if (error) {
-      // Check if email already exists
-      if (error.message.includes("already registered") || error.message.includes("already in use")) {
-        toast({
-          title: "Email already registered",
-          description: "This email is already registered. Please log in instead.",
-          variant: "destructive"
-        });
-        setTimeout(() => {
-          router.push("/login");
-        }, 2000);
-      } else {
-        toast({
-          title: "Error",
-          description: error.message || "An error occurred during signup",
-          variant: "destructive"
-        });
-      }
+    try {
+      // This will be replaced with Clerk authentication
+      
+      // For now, store the email in localStorage for verification demo
+      localStorage.setItem("verificationEmail", email);
+      
+      // Simulate sign-up process
+      toast({
+        title: "Sign-up in progress",
+        description: "Registration functionality is currently being updated."
+      });
+      
+      // Simulate loading for now
+      setTimeout(() => {
+        setIsLoading(false);
+        router.push("/verify-email");
+      }, 1000);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive"
+      });
       setIsLoading(false);
-      return;
     }
-
-    toast({
-      title: "Success!",
-      description: "Please check your email to confirm your account."
-    });
-    router.push("/verify-email");
-    setIsLoading(false);
   }
 
   const handleGoogleSignUp = async () => {
     try {
-      setIsLoading(true)
-      const { data, error } = await signUpWithGoogle()
+      setIsLoading(true);
       
-      if (error) {
-        toast({
-          title: "Error",
-          description: error instanceof Error ? error.message : "Authentication failed",
-          variant: "destructive"
-        })
-        setIsLoading(false)
-        return
-      }
-
-      if (data?.url) {
-        // Redirect to the OAuth provider's login page
-        window.location.href = data.url
-      }
+      // Google auth will be implemented with Clerk
+      toast({
+        title: "Google Auth",
+        description: "Google authentication is currently being updated."
+      });
+      
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 1000);
     } catch (error) {
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "An unexpected error occurred",
+        description: "An unexpected error occurred",
         variant: "destructive"
-      })
-      setIsLoading(false)
+      });
+      setIsLoading(false);
     }
   }
 
@@ -229,9 +213,18 @@ export default function SignUpPage() {
           <div>
             <Button
               type="submit"
+              disabled={isLoading}
               className="w-full flex justify-center py-2 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-[#7b3f00] hover:bg-[#7b3f00]/90 hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#7b3f00]"
             >
-              Sign up
+              {isLoading ? (
+                <div className="flex items-center">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Signing up...
+                </div>
+              ) : "Sign up"}
             </Button>
           </div>
         </form>

@@ -6,7 +6,6 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { supabase } from "@/lib/supabase"
 import { toast } from "@/components/ui/use-toast"
 
 export default function ForgotPasswordPage() {
@@ -20,23 +19,15 @@ export default function ForgotPasswordPage() {
     setIsLoading(true)
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      })
-
-      if (error) {
-        toast({
-          title: "Error",
-          description: error.message,
-          variant: "destructive"
-        })
+      // Password reset functionality will be implemented with Clerk
+      
+      // Simulate API call
+      setTimeout(() => {
+        // Always show success message, even if email doesn't exist
+        // This is for security reasons
+        setIsSubmitted(true)
         setIsLoading(false)
-        return
-      }
-
-      // Always show success message, even if email doesn't exist
-      // This is for security reasons
-      setIsSubmitted(true)
+      }, 1000)
     } catch (error) {
       toast({
         title: "Error",
