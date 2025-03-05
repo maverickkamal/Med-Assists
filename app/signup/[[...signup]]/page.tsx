@@ -2,8 +2,11 @@
 
 import { SignUp } from "@clerk/nextjs"
 import Link from "next/link"
+import { useState } from "react"
 
 export default function SignUpPage() {
+  const [isLoading, setIsLoading] = useState(false)
+
   return (
     <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-[#f2eadd]">
       <div className="max-w-md w-full space-y-8">
@@ -14,6 +17,9 @@ export default function SignUpPage() {
         
         <div className="mt-8">
           <SignUp
+            signInUrl="/login" 
+            afterSignUpUrl="/verify-email"
+            redirectUrl="/verify-email"
             appearance={{
               elements: {
                 formButtonPrimary: 
@@ -40,12 +46,28 @@ export default function SignUpPage() {
                   "text-[#7b3f00]",
                 identityPreviewEditButtonIcon: 
                   "text-[#7b3f00]",
+                formFieldErrorText:
+                  "text-red-600 text-sm",
+                formFieldSuccessText:
+                  "text-green-600 text-sm",
+                alert:
+                  "text-red-600 bg-red-100 border border-red-200 rounded-xl p-2",
+                alertText:
+                  "text-red-600 text-sm",
               },
             }}
+            path="/signup"
+            routing="path"
           />
         </div>
 
         <div className="text-center mt-4">
+          <p className="text-sm text-[#7b3f00]/70 mb-2">
+            Already have an account?{" "}
+            <Link href="/login" className="font-medium text-[#7b3f00] hover:text-[#7b3f00]/80 underline">
+              Sign in
+            </Link>
+          </p>
           <Link href="/" className="font-medium text-[#7b3f00] hover:text-[#7b3f00]/70">
             Back to home
           </Link>
