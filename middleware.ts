@@ -1,6 +1,27 @@
-import { clerkMiddleware } from "@clerk/nextjs/server";
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
-export default clerkMiddleware();
+// Define which routes are public (non-authenticated users can access)
+const isPublicRoute = createRouteMatcher([
+  '/', 
+  '/login(.*)',
+  '/signup(.*)',
+  '/forgot-password(.*)',
+  '/reset-password(.*)',
+  '/verify-email(.*)'
+]);
+
+// Define auth protected routes
+const isProtectedRoute = createRouteMatcher([
+  '/chat(.*)',
+  '/dashboard(.*)'
+]);
+
+export default clerkMiddleware(async (auth, req) => {
+  // Protect routes that require authentication
+  if (isProtectedRoute(req)) {
+    await auth.protect();
+  }
+});
 
 export const config = {
   matcher: [
