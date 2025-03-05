@@ -5,20 +5,43 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { toast } from "@/components/ui/use-toast"
 import { useRouter } from "next/navigation"
+import { useAuth, useSignUp } from "@clerk/nextjs"
 
 export default function VerifyEmailPage() {
   const [email, setEmail] = useState<string>("")
+  const [isLoading, setIsLoading] = useState(false)
+  
   const router = useRouter()
-
+  const { isLoaded, userId, sessionId } = useAuth()
+  const { isLoaded: signUpLoaded, signUp } = useSignUp()
+  
   useEffect(() => {
-    // Get email from localStorage that was saved during signup
-    const storedEmail = localStorage.getItem("verificationEmail")
-    if (storedEmail) {
-      setEmail(storedEmail)
+    // Get email from Clerk's signUp state or localStorage
+    if (signUpLoaded && signUp?.emailAddress) {
+      setEmail(signUp.emailAddress)
+    } else {
+      // Fallback to localStorage if Clerk state isn't available
+      const storedEmail = localStorage.getItem("verificationEmail")
+      if (storedEmail) {
+        setEmail(storedEmail)
+      }
     }
-  }, [])
+    
+    // If user is fully authenticated, redirect to chat
+    if (isLoaded && userId && sessionId) {
+      router.push("/chat")
+    }
+  }, [isLoaded, signUpLoaded, userId, sessionId, router, signUp?.emailAddress])
 
   const handleResendEmail = async () => {
+    if (!signUpLoaded) {
+      toast({
+        title: "Loading...",
+        description: "Please wait while we prepare to resend your verification email.",
+      })
+      return
+    }
+
     if (!email) {
       toast({
         title: "Error",
@@ -29,17 +52,32 @@ export default function VerifyEmailPage() {
     }
 
     try {
-      // Email verification functionality will be implemented with Clerk
-      toast({
-        title: "Email Sent",
-        description: "Verification email has been resent. Please check your inbox."
-      })
+      setIsLoading(true)
+      // Attempt to resend the verification email using Clerk
+      if (signUp?.status === "missing_requirements") {
+        await signUp.prepareEmailAddressVerification({
+          strategy: "email_code",
+        })
+        
+        toast({
+          title: "Email Sent",
+          description: "Verification email has been resent. Please check your inbox."
+        })
+      } else {
+        toast({
+          title: "Notice",
+          description: "Please use the verification link in the email we already sent you. If you don't see it, check your spam folder."
+        })
+      }
     } catch (error) {
       toast({
         title: "Error",
-        description: "An unexpected error occurred",
+        description: "An unexpected error occurred. Please try signing up again.",
         variant: "destructive"
       })
+      console.error("Error resending verification email:", error)
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -57,6 +95,11 @@ export default function VerifyEmailPage() {
             <p className="text-lg text-[#7b3f00] mb-4">
               Please verify your email address
             </p>
+            {email && (
+              <p className="font-medium text-[#7b3f00] mb-3">
+                {email}
+              </p>
+            )}
             <p className="text-sm text-[#7b3f00]/70 mb-6">
               We've sent a verification link to your email address. Please click the link in the email to verify your account and complete the registration process.
             </p>
@@ -71,8 +114,9 @@ export default function VerifyEmailPage() {
             <Button 
               className="w-full bg-[#7b3f00] hover:bg-[#7b3f00]/90 text-white rounded-xl"
               onClick={handleResendEmail}
+              disabled={isLoading}
             >
-              Resend Verification Email
+              {isLoading ? "Sending..." : "Resend Verification Email"}
             </Button>
             <Link href="/login" className="w-full">
               <Button 
