@@ -2,8 +2,11 @@
 
 import { SignIn } from "@clerk/nextjs"
 import Link from "next/link"
+import { useState } from "react"
 
 export default function SignInPage() {
+  const [isLoading, setIsLoading] = useState(false)
+
   return (
     <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-[#f2eadd]">
       <div className="max-w-md w-full space-y-8">
@@ -14,6 +17,9 @@ export default function SignInPage() {
         
         <div className="mt-8">
           <SignIn
+            signUpUrl="/signup"
+            path="/login"
+            routing="path"
             appearance={{
               elements: {
                 formButtonPrimary: 
@@ -40,12 +46,26 @@ export default function SignInPage() {
                   "text-[#7b3f00]",
                 identityPreviewEditButtonIcon: 
                   "text-[#7b3f00]",
+                formFieldErrorText:
+                  "text-red-600 text-sm",
+                formFieldSuccessText:
+                  "text-green-600 text-sm",
+                alert:
+                  "text-red-600 bg-red-100 border border-red-200 rounded-xl p-2",
+                alertText:
+                  "text-red-600 text-sm",
               },
             }}
           />
         </div>
 
         <div className="text-center mt-4">
+          <p className="text-sm text-[#7b3f00]/70 mb-2">
+            Don't have an account?{" "}
+            <Link href="/signup" className="font-medium text-[#7b3f00] hover:text-[#7b3f00]/80 underline">
+              Sign up
+            </Link>
+          </p>
           <Link href="/" className="font-medium text-[#7b3f00] hover:text-[#7b3f00]/70">
             Back to home
           </Link>
